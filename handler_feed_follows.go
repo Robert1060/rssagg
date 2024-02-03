@@ -69,5 +69,5 @@ func (apiCfg *ApiConfig) handlerDeleteFeedFollow(w http.ResponseWriter, r *http.
 		respondWithError(w, 400, fmt.Sprintf("Couldn't delete feed follow, %v", err))
 		return
 	}
-	respondWithJSON(w, 204, struct{}{})
+	respondWithJSON(w, 204, struct{ message string }{message: "Deleted successfully"})
 }

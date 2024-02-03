@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/Robert1060/rssagg/internal/database"
 	"github.com/go-chi/chi"
@@ -35,9 +36,13 @@ func main() {
 		log.Fatal("Can't connect to database")
 	}
 
+	dbConnection := database.New(connection)
+
 	apiCfg := ApiConfig{
-		DB: database.New(connection),
+		DB: dbConnection,
 	}
+
+	go startScraping(dbConnection, 10, time.Minute)
 
 	router := chi.NewRouter()
 
@@ -62,6 +67,8 @@ func main() {
 	v1Router.Post("/feed_follows", apiCfg.middlewareAuth(apiCfg.handlerCreateFeedFollow))
 	v1Router.Get("/feed_follows", apiCfg.middlewareAuth(apiCfg.handlerGetFeedFollows))
 	v1Router.Delete("/feed_follows/{feedFollowID}", apiCfg.middlewareAuth(apiCfg.handlerDeleteFeedFollow))
+
+	v1Router.Get("/posts", apiCfg.middlewareAuth(apiCfg.handlerGetPostsForUser))
 
 	router.Mount("/v1", v1Router)
 
